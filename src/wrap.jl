@@ -1,16 +1,7 @@
-bullet_repo = "/Users/goretkin/repos/bullet3/"
-bullet_so = joinpath(bullet_repo, "build/examples/c_api/bullet_c_api.dylib")
-
-const libclang = bullet_so
-using CEnum
-include("ctypes.jl")
-include("libclang_common.jl")
-include("libclang_api.jl")
-
-
 function submit_client_command_and_wait_status(sm, command)
   EnumSharedMemoryServerStatus(b3GetStatusType(b3SubmitClientCommandAndWaitStatus(sm, command)))
 end
+
 
 function load_urdf(sm, urdfpath; position=[0, 0, 0], orientation=[0, 0, 0, 1], flags=0)
   command = b3LoadUrdfCommandInit(sm, urdfpath)
@@ -25,6 +16,7 @@ function load_urdf(sm, urdfpath; position=[0, 0, 0], orientation=[0, 0, 0, 1], f
   bodyUniqueId = b3GetStatusBodyIndex(status_handle);
   return bodyUniqueId
 end
+
 
 function step_simulation(sm)
   status_handle = b3SubmitClientCommandAndWaitStatus(sm, b3InitStepSimulationCommand(sm))
@@ -41,26 +33,29 @@ function set_gravity(sm, gravity)
   @assert(b3GetStatusType(status_handle) == CMD_CLIENT_COMMAND_COMPLETED)
 end
 
-#sm = b3ConnectPhysicsDirect()
-sm = b3CreateInProcessPhysicsServerAndConnectMainThreadSharedMemory(0, [])
-
-@show submit_client_command_and_wait_status(sm, b3InitResetSimulationCommand(sm))
-
-urdfpath = joinpath(bullet_repo, "data/planeMesh.urdf")
-load_urdf(sm, urdfpath)
-
-for i in 1:5
-  cube = load_urdf(sm, joinpath(bullet_repo, "data", "cube_small.urdf"),
-    position=[0, i*0.02, (i+1)*0.2])
-  @show cube
+function get_joint_info(sm, body_id, joint_id)
+  ji = Ref{b3JointInfo}()
+  @assert 1 == b3GetJointInfo(sm, body_id, joint_id, ji)
+  return ji[]
 end
 
-set_gravity(sm, [0, 0, -9.8])
+function c_string(data::NTuple{N, UInt8}) where {N}
+  data = (data[1:(findfirst(isequal(0), data))-1])
+  return String(SArray{Tuple{length(data)}}(data))
+end
 
-# b3DisconnectSharedMemory(sm);
+function get_all_joints(sm, body_id)
+  num_joints = b3GetNumJoints(sm, body_id)
+  joint_names = OffsetArray{String}(undef, 0:num_joints-1)
+  link_names = OffsetArray{String}(undef, 0:num_joints-1)
+  joint_types = OffsetArray{JointType}(undef, 0:num_joints-1)
 
-
-for _ = 1:600
-  step_simulation(sm)
-  sleep(1/60)
+  joint_info_ref = Ref{b3JointInfo}()
+  for joint_id = 0:num_joints-1
+    @assert 1 == b3GetJointInfo(sm, body_id, joint_id, joint_info_ref)
+    joint_names[joint_id] = c_string(joint_info_ref[].m_jointName)
+    link_names[joint_id] = c_string(joint_info_ref[].m_linkName)
+    joint_types[joint_id] = JointType(joint_info_ref[].m_jointType)
+  end
+  return @eponymtuple(joint_names, link_names, joint_types)
 end
