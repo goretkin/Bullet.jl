@@ -44,4 +44,16 @@ z_jerk = diff(z_acc)  # physically, jerk = 0 in freefall
 @test all(z_jerk[1:50]  .< (50 * eps(Float32)))
 
 
+begin
+  using Bullet.CoordinateTransformations: Translation, Rotations, LinearMap
+  using Rotations: rotation_angle
+
+  set_transformation = compose(Translation(1,2,3), LinearMap(Rotations.RotXYZ(0.1, 0.1, 0.1)))
+
+  Bullet.set_base_pose(sm, cube_ids[1], set_transformation)
+  test_transformation = Bullet.get_base_pose(sm, cube_ids[1])
+  @test rotation_angle(set_transformation.linear \ test_transformation.linear) < 10eps(Float32)
+  @test isapprox(set_transformation.translation, test_transformation.translation)
+end
+
 Bullet.b3DisconnectSharedMemory(sm);
