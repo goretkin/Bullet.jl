@@ -1,0 +1,12 @@
+name = "Bullet"
+uuid = "be8bffce-7059-11e9-1487-3d776168f18e"
+authors = ["Gustavo Goretkin <gustavo.goretkin@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+BinDeps = "9e28174c-4ba2-5203-b857-d8d62c4213ee"
+CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
+CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
+EponymTuples = "97e2ac4a-e175-5f49-beb1-4d6866a6cdc3"
+OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
