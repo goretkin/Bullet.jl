@@ -1,25 +1,27 @@
-using BinDeps
+using BinaryProvider
 
-@BinDeps.setup
+const verbose = true
+const prefix = Prefix(joinpath(@__DIR__, "usr"))
 
-bullet_c_api = library_dependency("bullet_c_api")
-unpacked_dir = "bullet3-c_api_refactor_build"
-provides(Sources, URI("https://github.com/goretkin/bullet3/archive/c_api_refactor_build.zip"), [bullet_c_api], unpacked_dir=unpacked_dir)
-
-prefix=joinpath(BinDeps.depsdir(bullet_c_api),"usr")
-src_dir = joinpath(BinDeps.depsdir(bullet_c_api), "src", unpacked_dir)
-build_dir = joinpath(BinDeps.depsdir(bullet_c_api), "build")
+source_archive_url = "https://github.com/goretkin/bullet3/archive/c_api_refactor_build.tar.gz"
+source_archive_hash = "31dd27b6f10b6b149abbc7e5d6f5f4a683c4a6cc898fd6462f69224a18aa12b9"
 
 
-provides(SimpleBuild,
-    (@build_steps begin
-        CreateDirectory(build_dir)
-        GetSources(bullet_c_api)
-        @build_steps begin
-            ChangeDirectory(build_dir)
-            `cmake -DCMAKE_INSTALL_PREFIX=$prefix -DCMAKE_POSITION_INDEPENDENT_CODE=ON $src_dir`
-            `make install`
-        end
-end), [bullet_c_api])
+products = [ LibraryProduct(prefix, ["bullet_c_api"], :bullet_c_api) ]
 
-@BinDeps.install Dict(:bullet_c_api => :bullet_c_api)
+source_archive_path = joinpath(prefix, "downloads", "src.tar.gz")
+source_unpack_path = joinpath(prefix, "downloads", "src")
+build_dir = joinpath(prefix, "build")
+
+download_verify(source_archive_url, source_archive_hash, source_archive_path)
+unpack(source_archive_path, source_unpack_path)
+
+src_dir = joinpath(source_unpack_path, "bullet3-c_api_refactor_build")
+mkpath(build_dir)
+
+cd(build_dir) do
+    run(`cmake -DCMAKE_INSTALL_PREFIX=$(libdir(prefix)) -DCMAKE_POSITION_INDEPENDENT_CODE=ON $src_dir`)
+    run(`make -j$(Sys.CPU_THREADS) install`)
+end
+
+write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=verbose)

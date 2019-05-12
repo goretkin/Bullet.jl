@@ -45,7 +45,7 @@ z_jerk = diff(z_acc)  # physically, jerk = 0 in freefall
 
 
 begin
-  using Bullet.CoordinateTransformations: Translation, Rotations, LinearMap
+  using Bullet.CoordinateTransformations: Translation, Rotations, LinearMap, compose
   using Rotations: rotation_angle
 
   set_transformation = compose(Translation(1,2,3), LinearMap(Rotations.RotXYZ(0.1, 0.1, 0.1)))
