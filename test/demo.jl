@@ -4,14 +4,13 @@ sm = Bullet.b3ConnectPhysicsDirect()
 
 Bullet.submit_client_command_and_wait_status_checked(sm, Bullet.b3InitResetSimulationCommand(sm); checked_status=Bullet.CMD_RESET_SIMULATION_COMPLETED)
 
-urdfpath = joinpath(Bullet.data_dir, "planeMesh.urdf")
-floor_id = Bullet.load_urdf(sm, urdfpath)
+floor_id = Bullet.load_urdf(sm, Bullet.data_planeMesh_urdf)
 
 cube_ids = []
 @testset "load_urdf and get_base_pose" begin
   for i in 1:5
     starting_position = Float32[0, i*0.2, (i+1)*0.2]
-    cube_id = Bullet.load_urdf(sm, joinpath(Bullet.data_dir, "cube_small.urdf"),
+    cube_id = Bullet.load_urdf(sm, Bullet.data_cube_small_urdf,
       position=starting_position)
     push!(cube_ids, cube_id)
     # with default Bullet compile, Float32 roundtrips
