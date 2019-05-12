@@ -13,14 +13,14 @@ source_archive_path = joinpath(prefix, "downloads", "src.tar.gz")
 source_unpack_path = joinpath(prefix, "downloads", "src")
 build_dir = joinpath(prefix, "build")
 
-download_verify(source_archive_url, source_archive_hash, source_archive_path)
+download_verify(source_archive_url, source_archive_hash, source_archive_path; quiet_download=true)
 unpack(source_archive_path, source_unpack_path)
 
 src_dir = joinpath(source_unpack_path, "bullet3-c_api_refactor_build")
 mkpath(build_dir)
 
 cd(build_dir) do
-    run(`cmake -DCMAKE_INSTALL_PREFIX=$(libdir(prefix)) -DCMAKE_POSITION_INDEPENDENT_CODE=ON $src_dir`)
+    run(`cmake -DCMAKE_INSTALL_PREFIX=$(prefix.path) -DCMAKE_POSITION_INDEPENDENT_CODE=ON $src_dir`)
     run(`make -j$(Sys.CPU_THREADS) install`)
 end
 

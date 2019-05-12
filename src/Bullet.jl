@@ -13,9 +13,9 @@ end
 
 include(deps_file)
 
-const data_dir = joinpath(@__DIR__, "../deps/build/data")
+const data_dir = joinpath(@__DIR__, "..", "deps", "usr", "build", "data")
 const c_api_lib = bullet_c_api
-const include_dir = joinpath(@__DIR__, "../deps/usr/include")
+const include_dir = joinpath(@__DIR__, "..", "deps", "usr", "include")
 
 include("load.jl")
 include("wrap.jl")
