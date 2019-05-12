@@ -1,6 +1,6 @@
 using BinaryProvider
 
-const verbose = true
+const verbose = ("--verbose" in ARGS)
 const prefix = Prefix(joinpath(@__DIR__, "usr"))
 
 source_archive_url = "https://github.com/goretkin/bullet3/archive/c_api_refactor_build.tar.gz"
