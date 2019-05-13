@@ -50,6 +50,7 @@ end
 
 download_info = Dict(
     MacOS(:x86_64) => ("https://github.com/goretkin/BulletBuilder/releases/download/fake1/Bullet.v0.0.0.x86_64-apple-darwin14-gcc7-cxx03.tar.gz", "9aed912e9b843b5cf75f4f5c74af43808323f06e9aaedf6671e56a265d7bc954"),
+    Linux(:x86_64, libc=:glibc, compiler_abi=CompilerABI(:gcc7, :cxx11)) => ("https://github.com/goretkin/BulletBuilder/releases/download/fake2/Bullet.v0.0.0.x86_64-linux-gnu-gcc7-cxx11.tar.gz", "b5c88fa5758e80ababcfe0ab8869372c95e1ccfe7e74a10651641030c4fbe843"),
 )
 
 # Install unsatisfied or updated dependencies:
