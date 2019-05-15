@@ -21,20 +21,23 @@ products = vcat(file_products,
     ])
 
 
-file_products = filter(Base.Fix2(isa, FileProduct), products)
 
-function download_and_compile()
-    source_archive_url = "https://github.com/goretkin/bullet3/archive/c_api_refactor_build.tar.gz"
-    source_archive_hash = "31dd27b6f10b6b149abbc7e5d6f5f4a683c4a6cc898fd6462f69224a18aa12b9"
+source_archive_url = "https://github.com/goretkin/bullet3/archive/c_api_refactor_build.tar.gz"
+source_archive_hash = "31dd27b6f10b6b149abbc7e5d6f5f4a683c4a6cc898fd6462f69224a18aa12b9"
 
-    source_archive_path = joinpath(prefix, "downloads", "src.tar.gz")
-    source_unpack_path = joinpath(prefix, "downloads", "src")
-    build_dir = joinpath(prefix, "build")
+source_archive_path = joinpath(prefix, "downloads", "src.tar.gz")
+source_unpack_path = joinpath(prefix, "downloads", "src")
+src_dir = joinpath(source_unpack_path, "bullet3-c_api_refactor_build")
 
+function download()
     download_verify(source_archive_url, source_archive_hash, source_archive_path; quiet_download=true)
     unpack(source_archive_path, source_unpack_path)
+end
 
-    src_dir = joinpath(source_unpack_path, "bullet3-c_api_refactor_build")
+function download_and_compile()
+    download()
+    build_dir = joinpath(prefix, "build")
+
     mkpath(build_dir)
 
     cd(build_dir) do
@@ -55,8 +58,8 @@ download_info = Dict(
 
 # Install unsatisfied or updated dependencies:
 unsatisfied = any(!satisfied(p; verbose=verbose) for p in products)
-if haskey(download_info, platform_key()) && !forcecompile
-    url, tarball_hash = download_info[platform_key()]
+if haskey(download_info, platform_key_abi()) && !forcecompile
+    url, tarball_hash = download_info[platform_key_abi()]
     if !isinstalled(url, tarball_hash; prefix=prefix)
         # Download and install binaries
         install(url, tarball_hash; prefix=prefix, force=true, verbose=verbose)
@@ -70,5 +73,10 @@ end
 if unsatisfied || forcecompile
     download_and_compile()
 end
+
+# Cxx interface requires a bunch of forward declarations that are not installed by the Bullet build script
+# (including private structures)
+# download source anway.
+download()
 
 write_deps_file(joinpath(@__DIR__, "deps.jl"), products, verbose=verbose)
