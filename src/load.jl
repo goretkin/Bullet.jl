@@ -8,3 +8,5 @@ include("generated/ctypes.jl")
 include("generated/libclang_common.jl")
 include("generated/libclang_api.jl")
 end
+
+include("generated/safe_api.jl")

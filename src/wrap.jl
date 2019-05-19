@@ -31,7 +31,7 @@ end
 function set_gravity(sm, gravity)
   command = Raw.b3InitPhysicsParamCommand(sm)
 
-  Raw.b3PhysicsParamSetGravity(command, gravity...)
+  Safe.PhysicsParamSetGravity(command, gravity)
 
   submit_client_command_and_wait_status_checked(sm, command; checked_status=Raw.CMD_CLIENT_COMMAND_COMPLETED)
 end
@@ -123,13 +123,8 @@ function set_base_pose(sm, body_id, transformation)
   translation = transformation.translation
   rotation = transformation.linear
 
-  let (x, y, z) = transformation.translation
-    Raw.b3CreatePoseCommandSetBasePosition(command_handle, x, y, z)
-  end
-
-  let q = CoordinateTransformations.Rotations.Quat(rotation)
-    Raw.b3CreatePoseCommandSetBaseOrientation(command_handle, q.x, q.y, q.z, q.w)
-  end
+  Safe.CreatePoseCommandSetBasePosition(command_handle, translation)
+  Safe.CreatePoseCommandSetBaseOrientation(command_handle, rotation)
 
   submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CLIENT_COMMAND_COMPLETED)
 end
