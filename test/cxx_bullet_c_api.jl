@@ -13,8 +13,6 @@ addHeaderDir(joinpath(Bullet.repo_dir, "src"), kind=C_System)
 addHeaderDir(joinpath(Bullet.repo_dir, "examples/ThirdPartyLibs"), kind=C_System)
 
 
-sm = Bullet.b3ConnectPhysicsDirect()
-
 cxxinclude(joinpath(Bullet.repo_dir, "examples/SharedMemory/PhysicsClientSharedMemory.cpp"))
 cxxinclude(joinpath(Bullet.repo_dir, "examples/SharedMemory/PhysicsDirect.h"))
 
@@ -27,6 +25,9 @@ cxxinclude(joinpath(Bullet.repo_dir, "examples/SharedMemory/PhysicsServerCommand
 
 # struct PhysicsServerCommandProcessorInternalData is only declared here
 cxxinclude(joinpath(Bullet.repo_dir, "examples/SharedMemory/PhysicsServerCommandProcessor.cpp"))
+
+
+sm = Bullet.Raw.b3ConnectPhysicsDirect()
 
 pd = icxx"(PhysicsDirect*) $(sm);"
 @testset "PhysicsDirect isConnected" begin
@@ -56,4 +57,4 @@ gravity = icxx"$(dynamics_world)->m_gravity;"p
 @test [0.01f0, 0.02f0, -9.8f0] == btVector3_to_array(gravity)
 end
 
-Bullet.b3DisconnectSharedMemory(sm);
+Bullet.Raw.b3DisconnectSharedMemory(sm);

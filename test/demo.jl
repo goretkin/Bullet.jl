@@ -1,8 +1,8 @@
-sm = Bullet.b3ConnectPhysicsDirect()
-#sm = Bullet.b3CreateInProcessPhysicsServerAndConnectMainThreadSharedMemory(0, [])
-#sm = Bullet.b3CreateInProcessPhysicsServerAndConnectMainThread(0, [])
+sm = Bullet.Raw.b3ConnectPhysicsDirect()
+#sm = Bullet.Raw.b3CreateInProcessPhysicsServerAndConnectMainThreadSharedMemory(0, [])
+#sm = Bullet.Raw.b3CreateInProcessPhysicsServerAndConnectMainThread(0, [])
 
-Bullet.submit_client_command_and_wait_status_checked(sm, Bullet.b3InitResetSimulationCommand(sm); checked_status=Bullet.CMD_RESET_SIMULATION_COMPLETED)
+Bullet.submit_client_command_and_wait_status_checked(sm, Bullet.Raw.b3InitResetSimulationCommand(sm); checked_status=Bullet.Raw.CMD_RESET_SIMULATION_COMPLETED)
 
 floor_id = Bullet.load_urdf(sm, Bullet.data_planeMesh_urdf)
 
@@ -55,4 +55,4 @@ begin
   @test isapprox(set_transformation.translation, test_transformation.translation)
 end
 
-Bullet.b3DisconnectSharedMemory(sm);
+Bullet.Raw.b3DisconnectSharedMemory(sm);
