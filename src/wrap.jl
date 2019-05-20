@@ -284,23 +284,20 @@ function create_body_box(sm, half_extents, transformation, color)
   collision_shape_id = Raw.b3CreateCollisionShapeAddBox(command_handle, half_extents)
   @assert collision_shape_id != -1
 
-  Raw.b3CreateCollisionShapeSetChildTransform(command_handle, collision_shape_id, Float64[0,0,0], Float64[0,0,0,1])
+  Safe.CreateCollisionShapeSetChildTransform(command_handle, collision_shape_id, [0, 0, 0], one(Julian.Quat))
 
   status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CREATE_COLLISION_SHAPE_COMPLETED)
   collision_shape_unique_id = Raw.b3GetStatusCollisionShapeUniqueId(status_handle)
   @assert collision_shape_unique_id != -1
-
 
   #------------------
   command_handle = Raw.b3CreateVisualShapeCommandInit(sm)
   visual_shape_id = Raw.b3CreateVisualShapeAddBox(command_handle, half_extents)
   @assert visual_shape_id != -1
 
-  Raw.b3CreateVisualShapeSetChildTransform(command_handle, visual_shape_id, Float64[0,0,0], Float64[0,0,0,1])
-  Raw.b3CreateVisualShapeSetRGBAColor(command_handle, visual_shape_id, Julian.bullet_color_alpha(Float64, color))
-  specular_color = Julian.ColorTypes.RGB(1.0, 1.0, 1.0)
-  Raw.b3CreateVisualShapeSetSpecularColor(command_handle, visual_shape_id, Julian.bullet_color(Float64, specular_color))
-
+  Safe.CreateVisualShapeSetChildTransform(command_handle, visual_shape_id, [0, 0, 0], one(Julian.Quat))
+  Safe.CreateVisualShapeSetRGBAColor(command_handle, visual_shape_id, color)
+  Safe.CreateVisualShapeSetSpecularColor(command_handle, visual_shape_id, Julian.ColorTypes.RGB(1.0, 1.0, 1.0))
 
   status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CREATE_VISUAL_SHAPE_COMPLETED)
   visual_shape_unique_id = Raw.b3GetStatusVisualShapeUniqueId(status_handle)
@@ -311,22 +308,13 @@ function create_body_box(sm, half_extents, transformation, color)
   translation = transformation.translation
   rotation = transformation.linear
 
-  basePosition = Float64[0,0,0]
-  baseOrientation = Float64[0,0,0,1]
-
-  let q = CoordinateTransformations.Rotations.Quat(rotation)
-    # TODO make static vector for quaternion
-    basePosition[:] = translation
-    baseOrientation[:] = [q.x, q.y, q.z, q.w]
-  end
-
   command_handle = Raw.b3CreateMultiBodyCommandInit(sm)
   baseMass = 0
-  baseInertialFramePosition = Float64[0,0,0]
-  baseInertialFrameOrientation = Float64[0,0,0,1]
+  baseInertialFramePosition = [0,0,0]
+  baseInertialFrameOrientation = one(Julian.Quat)
 
-  Raw.b3CreateMultiBodyBase(command_handle,
-    baseMass, collision_shape_unique_id, visual_shape_unique_id, basePosition, baseOrientation, baseInertialFramePosition, baseInertialFrameOrientation);
+  Safe.CreateMultiBodyBase(command_handle,
+    baseMass, collision_shape_unique_id, visual_shape_unique_id, translation, rotation, baseInertialFramePosition, baseInertialFrameOrientation);
 
   status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CREATE_MULTI_BODY_COMPLETED)
   body_id = Raw.b3GetStatusBodyIndex(status_handle)
