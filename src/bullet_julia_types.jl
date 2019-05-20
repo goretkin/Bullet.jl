@@ -5,10 +5,11 @@ export
     bullet_quaternion,
     bullet_vector3
 
+import CoordinateTransformations
+using CoordinateTransformations.Rotations: Quat
 
-import CoordinateTransformations.Rotations: Quat
-
-import ColorTypes: red, green, blue, alpha
+import ColorTypes
+using ColorTypes: red, green, blue, alpha
 
 bullet_color_alpha(T, color) = T[red(color), green(color), blue(color), alpha(color)]
 bullet_color(T, color) = T[red(color), green(color), blue(color)]
