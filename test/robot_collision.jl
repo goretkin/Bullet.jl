@@ -20,15 +20,10 @@ cpi = Bullet.get_contact_point_information(sm, robot_id, box_id, 0.001)
 
 contacts = [unsafe_load(cpi.m_contactPointData, i) for i=1:cpi.m_numContactPoints]
 
-if Bullet.connection_state.kind == :gui
-  for contact in contacts
-    link_id = contact.m_linkIndexA
-    if link_id == -1; continue end
-    shape_id = -1
-    command_handle = Bullet.Raw.b3InitUpdateVisualShape2(sm, robot_id, link_id, shape_id);
-    Bullet.Safe.UpdateVisualShapeRGBAColor(command_handle, ColorTypes.RGBA(0.5, 0.5, 0.5, 0.5));
-    Bullet.submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Bullet.Raw.CMD_VISUAL_SHAPE_UPDATE_COMPLETED)
-  end
+for contact in contacts
+  link_id = contact.m_linkIndexA
+  if link_id == -1; continue end
+  Bullet.set_color(sm, ColorTypes.RGBA(0.5, 0.5, 0.5, 0.5); body_id=robot_id, link_id=link_id)
 end
 
 @testset "collision" begin

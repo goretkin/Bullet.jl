@@ -320,3 +320,32 @@ function create_body_box(sm, half_extents, transformation, color)
   body_id = Raw.b3GetStatusBodyIndex(status_handle)
   return body_id
 end
+
+function set_color(sm, color; body_id, link_id=-1, shape_id=-1)
+  command_handle = Raw.b3InitUpdateVisualShape2(sm, body_id, link_id, shape_id);
+  Safe.UpdateVisualShapeRGBAColor(command_handle, color)
+  submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Bullet.Raw.CMD_VISUAL_SHAPE_UPDATE_COMPLETED)
+end
+
+function raycast(sm, ray_from, ray_to)
+  command_handle = Safe.CreateRaycastCommandInit(sm, ray_from, ray_to)
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_REQUEST_RAY_CAST_INTERSECTIONS_COMPLETED)
+  rci_ref = Ref{Raw.b3RaycastInformation}()
+  Raw.b3GetRaycastInformation(sm, rci_ref)
+  rci = rci_ref[]
+
+  @assert rci.m_numRayHits <= 1
+  if rci.m_numRayHits == 0
+    #return nothing
+    error("even if ray doesn't hit, expected a hit object")
+  end
+  ray_hit = unsafe_load(rci.m_rayHits)
+  return ray_hit
+end
+
+function user_debug_draw_add_line(sm, from, to, color, line_width, life_time)
+  command_handle = Safe.InitUserDebugDrawAddLine3D(sm, from, to, color, line_width, life_time)
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_USER_DEBUG_DRAW_COMPLETED)
+  debugItemUniqueId = Raw.b3GetDebugItemUniqueId(status_handle)
+  return debugItemUniqueId
+end
