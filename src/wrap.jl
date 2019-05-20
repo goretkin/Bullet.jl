@@ -203,3 +203,132 @@ function set_base_pose(sm, body_id, transformation)
 
   submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CLIENT_COMMAND_COMPLETED)
 end
+
+
+struct BodyManager
+  sm::Ptr{Raw.b3PhysicsClientHandle__}
+  body_id::Int
+  joint_names::OffsetArray{Symbol, 1, Vector{Symbol}}
+  link_names::OffsetArray{Symbol, 1, Vector{Symbol}}
+  joint_types::OffsetArray{Raw.JointType, 1, Vector{Raw.JointType}}
+  joint::Dict{Symbol, Int}
+  link::Dict{Symbol, Int}
+end
+
+
+function BodyManager(sm, body_id::Integer)
+  all_joints = Bullet.get_all_joints(sm, body_id)
+  BodyManager(sm, body_id,
+    map(Symbol, all_joints.joint_names),
+    map(Symbol, all_joints.link_names),
+    all_joints.joint_types,
+    Dict(Symbol(all_joints.joint_names[i])=>i for i = eachindex(all_joints.joint_names)),
+    Dict(Symbol(all_joints.link_names[i])=>i for i = eachindex(all_joints.link_names))
+  )
+end
+
+
+
+function get_contact_point_information(sm, body_a_id, link_a_id, body_b_id, link_b_id, distance)
+  command_handle = Raw.b3InitClosestDistanceQuery(sm)
+  Raw.b3SetClosestDistanceThreshold(command_handle, distance)
+  Raw.b3SetClosestDistanceFilterBodyA(command_handle, body_a_id)
+  Raw.b3SetClosestDistanceFilterBodyB(command_handle, body_b_id)
+
+  Raw.b3SetClosestDistanceFilterLinkA(command_handle, link_a_id)
+  Raw.b3SetClosestDistanceFilterLinkB(command_handle, link_b_id)
+
+  submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CONTACT_POINT_INFORMATION_COMPLETED)
+
+  contact_point_data = Ref{Raw.b3ContactInformation}()
+  Raw.b3GetContactPointInformation(sm, contact_point_data)
+  return contact_point_data[]
+end
+
+
+function get_contact_point_information(sm, body_a_id, body_b_id, distance)
+  command_handle = Raw.b3InitClosestDistanceQuery(sm)
+  Raw.b3SetClosestDistanceThreshold(command_handle, distance)
+  Raw.b3SetClosestDistanceFilterBodyA(command_handle, body_a_id)
+  Raw.b3SetClosestDistanceFilterBodyB(command_handle, body_b_id)
+
+  submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CONTACT_POINT_INFORMATION_COMPLETED)
+
+  contact_point_data = Ref{Raw.b3ContactInformation}()
+  Raw.b3GetContactPointInformation(sm, contact_point_data)
+  return contact_point_data[]
+end
+
+function set_debug_object_color(sm, body_id, link_id, color_rgb)
+  #=
+    only visible in wireframe mode of Bullet debug visualizer (hit the W key)
+  =#
+  command_handle = Raw.b3InitDebugDrawingCommand(sm)
+  Raw.b3SetDebugObjectColor(command_handle, body_id, link_id, color_rgb);
+  submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_USER_DEBUG_DRAW_COMPLETED);
+end
+
+function set_collision_filter_pair(sm, body_a_id, link_a_id, body_b_id, link_b_id, enable_collision)
+  command_handle = Raw.b3CollisionFilterCommandInit(sm)
+	Raw.b3SetCollisionFilterPair(command_handle, body_a_id, body_b_id, link_a_id, link_b_id, enable_collision);
+  submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CLIENT_COMMAND_COMPLETED);
+end
+
+
+function create_body_box(sm, half_extents, transformation, color)
+  half_extents = convert(Vector{Float64}, half_extents)
+  @assert length(half_extents) == 3
+
+  command_handle = Raw.b3CreateCollisionShapeCommandInit(sm)
+  # id within a possibly-compound collision shape
+  collision_shape_id = Raw.b3CreateCollisionShapeAddBox(command_handle, half_extents)
+  @assert collision_shape_id != -1
+
+  Raw.b3CreateCollisionShapeSetChildTransform(command_handle, collision_shape_id, Float64[0,0,0], Float64[0,0,0,1])
+
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CREATE_COLLISION_SHAPE_COMPLETED)
+  collision_shape_unique_id = Raw.b3GetStatusCollisionShapeUniqueId(status_handle)
+  @assert collision_shape_unique_id != -1
+
+
+  #------------------
+  command_handle = Raw.b3CreateVisualShapeCommandInit(sm)
+  visual_shape_id = Raw.b3CreateVisualShapeAddBox(command_handle, half_extents)
+  @assert visual_shape_id != -1
+
+  Raw.b3CreateVisualShapeSetChildTransform(command_handle, visual_shape_id, Float64[0,0,0], Float64[0,0,0,1])
+  Raw.b3CreateVisualShapeSetRGBAColor(command_handle, visual_shape_id, Julian.bullet_color_alpha(Float64, color))
+  specular_color = Julian.ColorTypes.RGB(1.0, 1.0, 1.0)
+  Raw.b3CreateVisualShapeSetSpecularColor(command_handle, visual_shape_id, Julian.bullet_color(Float64, specular_color))
+
+
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CREATE_VISUAL_SHAPE_COMPLETED)
+  visual_shape_unique_id = Raw.b3GetStatusVisualShapeUniqueId(status_handle)
+  @assert visual_shape_unique_id != -1
+
+  #-----------
+
+  translation = transformation.translation
+  rotation = transformation.linear
+
+  basePosition = Float64[0,0,0]
+  baseOrientation = Float64[0,0,0,1]
+
+  let q = CoordinateTransformations.Rotations.Quat(rotation)
+    # TODO make static vector for quaternion
+    basePosition[:] = translation
+    baseOrientation[:] = [q.x, q.y, q.z, q.w]
+  end
+
+  command_handle = Raw.b3CreateMultiBodyCommandInit(sm)
+  baseMass = 0
+  baseInertialFramePosition = Float64[0,0,0]
+  baseInertialFrameOrientation = Float64[0,0,0,1]
+
+  Raw.b3CreateMultiBodyBase(command_handle,
+    baseMass, collision_shape_unique_id, visual_shape_unique_id, basePosition, baseOrientation, baseInertialFramePosition, baseInertialFrameOrientation);
+
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CREATE_MULTI_BODY_COMPLETED)
+  body_id = Raw.b3GetStatusBodyIndex(status_handle)
+  return body_id
+end
