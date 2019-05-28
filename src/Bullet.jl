@@ -23,5 +23,5 @@ const repo_dir = joinpath(dirname(bullet_c_api), "..", "downloads", "src", "bull
 include("bullet_julia_types.jl")
 include("load.jl")
 include("wrap.jl")
-
+include("rigid_body_dynamics.jl")
 end # module

@@ -28,7 +28,7 @@ function handle_gui(sm)
   )
 end
 
-function setup_timer()
+function setup_gui_timer()
   global connection_state
   global timer_state
   if connection_state == nothing
@@ -47,12 +47,9 @@ function connect(;kind=:direct, do_reset_sim=true, )
     if kind == :direct
       handle = Raw.b3ConnectPhysicsDirect()
       connection_state = (kind=kind, handle=handle)
-      nothing
     elseif kind == :gui
       handle = Raw.b3CreateInProcessPhysicsServerAndConnectMainThread(0, [])
       connection_state = (kind=kind, handle=handle)
-      Bullet.setup_timer()
-      nothing
     end
 
     if connection_state == nothing
@@ -163,7 +160,6 @@ function set_joint_position(sm, body_id, joint_id; position=nothing, velocity=no
   velocity != nothing && Raw.b3CreatePoseCommandSetJointVelocity(sm, command_handle, joint_id, velocity);
 
   submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CLIENT_COMMAND_COMPLETED)
-
 end
 
 
@@ -202,6 +198,18 @@ function set_base_pose(sm, body_id, transformation)
   Safe.CreatePoseCommandSetBaseOrientation(command_handle, rotation)
 
   submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_CLIENT_COMMAND_COMPLETED)
+end
+
+
+function get_links_poses(sm, body_id)
+  command_handle = Raw.b3RequestActualStateCommandInit(sm, body_id)
+  Raw.b3RequestActualStateCommandComputeForwardKinematics(command_handle, true)
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_ACTUAL_STATE_UPDATE_COMPLETED)
+
+  link_index = 1
+  link_state_ref = Ref{Raw.b3LinkState}()
+  Raw.b3GetLinkState(sm, status_handle, link_index, link_state_ref)
+  return link_state_ref[]
 end
 
 
