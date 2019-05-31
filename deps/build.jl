@@ -1,6 +1,7 @@
 using BinaryProvider
 
 const forcecompile = get(ENV, "JULIA_BULLET_FORCE_COMPILE", "no") == "yes"
+const additional_cmake_commands = get(ENV, "JULIA_BULLET_ADDITIONAL_CMAKE_COMMANDS", "")
 
 const verbose = ("--verbose" in ARGS)
 const prefix = Prefix(joinpath(@__DIR__, "usr"))
@@ -34,14 +35,13 @@ function download()
     unpack(source_archive_path, source_unpack_path)
 end
 
-function download_and_compile()
-    download()
+function compile()
     build_dir = joinpath(prefix, "build")
 
     mkpath(build_dir)
 
     cd(build_dir) do
-        run(`cmake -DCMAKE_INSTALL_PREFIX=$(prefix.path) -DCMAKE_POSITION_INDEPENDENT_CODE=ON $src_dir`)
+        run(`cmake -DCMAKE_INSTALL_PREFIX=$(prefix.path) -DCMAKE_POSITION_INDEPENDENT_CODE=ON $(additional_cmake_commands) $src_dir`)
         run(`make -j$(Sys.CPU_THREADS) install`)
     end
 
@@ -71,7 +71,8 @@ if haskey(download_info, platform_key_abi()) && !forcecompile
 end
 
 if unsatisfied || forcecompile
-    download_and_compile()
+    download()
+    compile()
 end
 
 # Cxx interface requires a bunch of forward declarations that are not installed by the Bullet build script
