@@ -1,4 +1,5 @@
 module Bullet
+__precompile__(false)
 
 using StaticArrays
 using EponymTuples
@@ -24,4 +25,5 @@ include("bullet_julia_types.jl")
 include("load.jl")
 include("wrap.jl")
 include("rigid_body_dynamics.jl")
+include("cxx.jl")
 end # module

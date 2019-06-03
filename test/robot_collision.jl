@@ -1,4 +1,3 @@
-import Bullet
 import AtlasRobot
 
 import .Bullet.Julian.CoordinateTransformations: Translation, Rotations, LinearMap, compose

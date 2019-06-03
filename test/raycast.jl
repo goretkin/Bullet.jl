@@ -1,5 +1,3 @@
-import Bullet
-
 import .Bullet.Julian.CoordinateTransformations: Translation, Rotations, LinearMap, compose
 import .Bullet.Julian: ColorTypes
 TX(x,y,z,r,p,yaw) = compose(Translation(x,y,z), LinearMap(Rotations.RotXYZ(r, p, yaw)))
