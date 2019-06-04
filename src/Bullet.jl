@@ -1,5 +1,5 @@
-module Bullet
 __precompile__(false)
+module Bullet
 
 using StaticArrays
 using EponymTuples
@@ -26,4 +26,10 @@ include("load.jl")
 include("wrap.jl")
 include("rigid_body_dynamics.jl")
 include("cxx.jl")
+
+function __init__()
+  println("Load Cxx Files")
+  BulletCxx.load_cxx_files()
+end
+
 end # module

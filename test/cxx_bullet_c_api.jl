@@ -1,19 +1,8 @@
 sm = Bullet.Raw.b3ConnectPhysicsDirect()
 
-pd = icxx"(PhysicsDirect*) $(sm);"
-@testset "PhysicsDirect isConnected" begin
-  @test icxx"$(pd)->isConnected();"
-end
+pscpid = Bullet.BulletCxx.get_physics_server_command_processor_internal_data_from_c_api_handle(sm)
 
-pdid = icxx"$(pd)->m_data;"p # PhysicsDirectInternalData* m_data is a private field. Cxx allows this with the `p`
-
-pcpi = icxx"$(pdid)->m_commandProcessor;" # PhysicsCommandProcessorInterface
-
-pscp = icxx"(PhysicsServerCommandProcessor*) $(pcpi);"
-
-pscpid = icxx"$(pscp)->m_data;"p # PhysicsServerCommandProcessorInternalData
-
-# warning, the type of `dyanmics_world` depends on compile-time #define `SKIP_SOFT_BODY_MULTI_BODY_DYNAMICS_WORLD`
+# warning, the type of `dynamics_world` depends on compile-time #define `SKIP_SOFT_BODY_MULTI_BODY_DYNAMICS_WORLD`
 dynamics_world = icxx"$(pscpid)->m_dynamicsWorld;" # class btSoftMultiBodyDynamicsWorld : public btMultiBodyDynamicsWorld
 # class btMultiBodyDynamicsWorld : public btDiscreteDynamicsWorld
 
