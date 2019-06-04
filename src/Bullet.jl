@@ -21,6 +21,14 @@ const include_dir = joinpath(@__DIR__, "..", "deps", "usr", "include")
 # TODO properly package needed files
 const repo_dir = joinpath(dirname(bullet_c_api), "..", "downloads", "src", "bullet3-c_api_refactor_build")
 
+"""
+LINK_ID_NONE
+
+For Bullet link_index representing the base in MultiBody objects, or representing no link in collision queries.
+"""
+const LINK_ID_NONE = -1
+
+
 include("bullet_julia_types.jl")
 include("load.jl")
 include("wrap.jl")

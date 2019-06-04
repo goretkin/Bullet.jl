@@ -13,3 +13,5 @@ __current_compiler__ =  Bullet.BulletCxx.Cxx.__default_compiler__ # used by Cxx 
 
 include("cxx_simple.jl")
 include("cxx_bullet_c_api.jl")
+
+include("collision_flags.jl")

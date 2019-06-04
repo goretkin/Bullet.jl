@@ -21,7 +21,7 @@ contacts = [unsafe_load(cpi.m_contactPointData, i) for i=1:cpi.m_numContactPoint
 
 for contact in contacts
   link_id = contact.m_linkIndexA
-  if link_id == -1; continue end
+  if link_id == Bullet.LINK_ID_NONE; continue end
   Bullet.set_color(sm, ColorTypes.RGBA(0.5, 0.5, 0.5, 0.5); body_id=robot_id, link_id=link_id)
 end
 

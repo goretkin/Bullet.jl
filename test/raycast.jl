@@ -17,7 +17,7 @@ single_time = @elapsed (hits = [Bullet.raycast(sm, eye, target) for target in ta
 
 if Bullet.connection_state.kind == :gui
   for raycast_i in eachindex(targets)
-    did_hit = hits[raycast_i].m_hitObjectUniqueId != -1
+    did_hit = hits[raycast_i].m_hitObjectUniqueId != Bullet.LINK_ID_NONE
     #did_hit = false
     color = if did_hit ColorTypes.RGBA(1.0, 1.0, 0.0, 0.5) else ColorTypes.RGBA(1.0, 1.0, 1.0, 0.5) end
     to = if did_hit collect(hits[raycast_i].m_hitPositionWorld) else targets[raycast_i] end

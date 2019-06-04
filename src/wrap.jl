@@ -376,3 +376,17 @@ function user_debug_draw_add_line(sm, from, to, color, line_width, life_time)
   debugItemUniqueId = Raw.b3GetDebugItemUniqueId(status_handle)
   return debugItemUniqueId
 end
+
+function get_collision_shape_information(sm, body_id, link_id)
+  command_handle = Raw.b3InitRequestCollisionShapeInformation(sm, body_id, link_id);
+  status_handle = submit_client_command_and_wait_status_checked(sm, command_handle; checked_status=Raw.CMD_COLLISION_SHAPE_INFO_COMPLETED)
+  collision_shape_info = Ref{Raw.b3CollisionShapeInformation}()
+  Raw.b3GetCollisionShapeInformation(sm, collision_shape_info)
+  return collision_shape_info[]
+end
+
+function set_collision_flags(sm, body_id, link_id, collision_filter_group, collision_filter_mask)
+  command_handle = Raw.b3CollisionFilterCommandInit(sm)
+  Raw.b3SetCollisionFilterGroupMask(command_handle, body_id, link_id, collision_filter_group, collision_filter_mask)
+  submit_client_command_and_wait_status_checked(sm, command_handle; checked_status = Raw.CMD_CLIENT_COMMAND_COMPLETED)
+end
