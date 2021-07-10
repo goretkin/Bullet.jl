@@ -5,8 +5,8 @@ export
     bullet_quaternion,
     bullet_vector3
 
-import CoordinateTransformations
-using CoordinateTransformations.Rotations: Quat
+import Rotations
+using Rotations: Quat
 
 import ColorTypes
 using ColorTypes: red, green, blue, alpha

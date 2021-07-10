@@ -13,6 +13,7 @@ EponymTuples = "97e2ac4a-e175-5f49-beb1-4d6866a6cdc3"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 RigidBodyDynamics = "366cf18f-59d5-5db9-a4de-86a9f6786172"
+Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [extras]
