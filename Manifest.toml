@@ -39,12 +39,6 @@ git-tree-sha1 = "47f05d0b7f4999609f92e657147df000818c1f24"
 uuid = "150eb455-5306-5404-9cee-2592286d6298"
 version = "0.5.0"
 
-[[Cxx]]
-deps = ["BinaryProvider", "Libdl", "REPL"]
-git-tree-sha1 = "8bba4210f70d2e205b4556f6e3e084ca5119dd8f"
-uuid = "a0b5b9ef-44b7-5148-a2d1-f6db19f3c3d2"
-version = "0.3.2"
-
 [[Dates]]
 deps = ["Printf"]
 uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
