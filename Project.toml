@@ -8,11 +8,11 @@ BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
 CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
 ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 CoordinateTransformations = "150eb455-5306-5404-9cee-2592286d6298"
-Cxx = "a0b5b9ef-44b7-5148-a2d1-f6db19f3c3d2"
 EponymTuples = "97e2ac4a-e175-5f49-beb1-4d6866a6cdc3"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 RigidBodyDynamics = "366cf18f-59d5-5db9-a4de-86a9f6786172"
+Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [extras]
